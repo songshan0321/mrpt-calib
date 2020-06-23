@@ -158,8 +158,8 @@ void TCamera::loadFromConfigFile(
 
 	CVectorDouble dists;
 	cfg.read_vector(section, "dist", CVectorDouble(), dists, true);
-	if (dists.size() != 4 && dists.size() != 5)
-		THROW_EXCEPTION("Expected 4 or 5-length vector in field 'dist'");
+	if (dists.size() != 4 && dists.size() != 5 && dists.size() != 8)
+		THROW_EXCEPTION("Expected 4 or 5 or 8-length vector in field 'dist'");
 
 	dist.fill(0);
 	for (CVectorDouble::Index i = 0; i < dists.size(); i++) dist[i] = dists[i];

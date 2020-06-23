@@ -655,15 +655,15 @@ add_subdirectory(doc)
 
 #   UNIT TESTS:
 # ----------------------------------------------------------------------------
-set( BUILD_TESTING ON CACHE BOOL "Build MRPT tests")
-if( BUILD_TESTING)
-	# Try using libgtest (Google testing library) from the system, if available
-	if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND APPLE)
-		add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
-	endif()
-	add_subdirectory(${CMAKE_MRPT_GTEST_SRC_DIR})  # Build gtest from sources
-	add_subdirectory(tests)  # Build my tests
-endif()
+# set( BUILD_TESTING ON CACHE BOOL "Build MRPT tests")
+#  if( BUILD_TESTING)
+# 	# Try using libgtest (Google testing library) from the system, if available
+# 	if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND APPLE)
+# 		add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
+# 	endif()
+# 	add_subdirectory(${CMAKE_MRPT_GTEST_SRC_DIR})  # Build gtest from sources
+# 	add_subdirectory(tests)  # Build my tests
+# endif()
 
 #-----------------------------------
 # The python bindings

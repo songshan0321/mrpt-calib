@@ -1639,14 +1639,15 @@ void CImage::undistort(
 	const auto& intrMat = cameraParams.intrinsicParams;
 	const auto& dist = cameraParams.dist;
 
-	cv::Mat distM(1, 5, CV_64F, const_cast<double*>(&dist[0]));
+	cv::Mat distM(1, 8, CV_64F, const_cast<double*>(&dist[0]));
 	cv::Mat inMat(3, 3, CV_64F);
 
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++) inMat.at<double>(i, j) = intrMat(i, j);
 
+	// cv::Mat newInMat, _ = cv::getOptimalNewCameraMatrix(srcImg, distM, cv::Size(srcImg.cols,srcImg.rows), 0, cv::Size(srcImg.cols,srcImg.rows));
+	// cv::undistort(srcImg, out_img.m_impl->img, inMat, distM, newInMat);
 	cv::undistort(srcImg, out_img.m_impl->img, inMat, distM);
-
 #endif
 }
 

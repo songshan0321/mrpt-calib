@@ -61,7 +61,7 @@ void mrpt::vision::pinhole::projectPoints_with_distortion(
 
 	ASSERT_(intrinsicParams.rows() == 3);
 	ASSERT_(intrinsicParams.cols() == 3);
-	ASSERT_(distortionParams.size() == 4 || distortionParams.size() == 5);
+	ASSERT_(distortionParams.size() == 4 || distortionParams.size() == 5 || distortionParams.size() == 8);
 
 	const size_t N = in_points_3D.size();
 	projectedPoints.resize(N);
@@ -99,7 +99,7 @@ void mrpt::vision::pinhole::projectPoints_with_distortion(
 	cv::Mat _translation_vector = cv::Mat(3, 1, CV_64FC1, translation_vector);
 	cv::Mat camera_matrix = cv::Mat(3, 3, CV_64FC1, &proj_matrix[0]);
 	cv::Mat dist_coeffs =
-		cv::Mat(5, 1, CV_64FC1, const_cast<double*>(&distortionParams[0]));
+		cv::Mat(8, 1, CV_64FC1, const_cast<double*>(&distortionParams[0]));
 
 	vector<cv::Point2d> image_points;
 
@@ -172,7 +172,7 @@ void mrpt::vision::pinhole::undistort_points(
 		double y0 = y = (y - cy) * ify;
 
 		// compensate distortion iteratively
-		for (unsigned int j = 0; j < 5; j++)
+		for (unsigned int j = 0; j < 8; j++)
 		{
 			double r2 = x * x + y * y;
 			double icdist =
@@ -225,7 +225,7 @@ void mrpt::vision::pinhole::undistort_point(
 	double y0 = y = (y - cy) * ify;
 
 	// compensate distortion iteratively
-	for (unsigned int j = 0; j < 5; j++)
+	for (unsigned int j = 0; j < 8; j++)
 	{
 		double r2 = x * x + y * y;
 		double icdist =

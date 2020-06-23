@@ -40,7 +40,7 @@ class TCamera : public mrpt::serialization::CSerializable
 	mrpt::math::CMatrixDouble33 intrinsicParams;
 	/** [k1 k2 t1 t2 k3] -> k_i: parameters of radial distortion, t_i:
 	 * parameters of tangential distortion (default=0) */
-	std::array<double, 5> dist{{.0, .0, .0, .0, .0}};
+	std::array<double, 8> dist{{.0, .0, .0, .0, .0, .0, .0, .0}};
 	/** The focal length of the camera, in meters (can be used among
 	 * 'intrinsicParams' to determine the pixel size). */
 	double focalLengthMeters{.0};
@@ -111,14 +111,14 @@ class TCamera : public mrpt::serialization::CSerializable
 	inline void getDistortionParamsVector(
 		mrpt::math::CMatrixDouble15& distParVector) const
 	{
-		for (size_t i = 0; i < 5; i++) distParVector(0, i) = dist[i];
+		for (size_t i = 0; i < 8; i++) distParVector(0, i) = dist[i];
 	}
 
 	/** Get a vector with the distortion params of the camera  */
 	inline std::vector<double> getDistortionParamsAsVector() const
 	{
-		std::vector<double> v(5);
-		for (size_t i = 0; i < 5; i++) v[i] = dist[i];
+		std::vector<double> v(8);
+		for (size_t i = 0; i < 8; i++) v[i] = dist[i];
 		return v;
 	}
 
@@ -126,7 +126,7 @@ class TCamera : public mrpt::serialization::CSerializable
 	void setDistortionParamsVector(
 		const mrpt::math::CMatrixDouble15& distParVector)
 	{
-		for (size_t i = 0; i < 5; i++) dist[i] = distParVector(0, i);
+		for (size_t i = 0; i < 8; i++) dist[i] = distParVector(0, i);
 	}
 
 	/** Set the whole vector of distortion params of the camera from a 4 or
@@ -135,7 +135,7 @@ class TCamera : public mrpt::serialization::CSerializable
 	void setDistortionParamsVector(const VECTORLIKE& distParVector)
 	{
 		auto N = static_cast<size_t>(distParVector.size());
-		ASSERT_(N == 4 || N == 5);
+		ASSERT_(N == 4 || N == 5 || N == 8);
 		dist[4] = 0;  // Default value
 		for (size_t i = 0; i < N; i++) dist[i] = distParVector[i];
 	}

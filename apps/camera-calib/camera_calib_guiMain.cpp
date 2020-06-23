@@ -11,6 +11,7 @@
 	APPLICATION: Camera calibration GUI
 	AUTHOR: Jose Luis Blanco, based on code from the OpenCV library.
   ---------------------------------------------------------------*/
+#include <yaml-cpp/yaml.h>
 
 #include "camera_calib_guiMain.h"
 #include "CDlgCalibWizardOnline.h"
@@ -57,7 +58,7 @@ mrpt::img::TCamera camera_params;
 
 // END VARIABLES  ============================
 
-#include "../wx-common/mrpt_logo.xpm"
+#include "imgs/mrpt_logo.xpm"
 #include "imgs/icono_main.xpm"
 
 // A custom Art provider for customizing the icons:
@@ -259,9 +260,9 @@ camera_calib_guiDialog::camera_calib_guiDialog(wxWindow* parent, wxWindowID id)
 		StaticText1, 1,
 		wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
 	edSizeX = new wxSpinCtrl(
-		this, ID_SPINCTRL1, _T("9"), wxDefaultPosition, wxSize(50, -1), 0, 1,
+		this, ID_SPINCTRL1, _T("12"), wxDefaultPosition, wxSize(50, -1), 0, 1,
 		200, 5, _T("ID_SPINCTRL1"));
-	edSizeX->SetValue(_T("9"));
+	edSizeX->SetValue(_T("12"));
 	FlexGridSizer17->Add(
 		edSizeX, 1, wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
 		5);
@@ -272,9 +273,9 @@ camera_calib_guiDialog::camera_calib_guiDialog(wxWindow* parent, wxWindowID id)
 		StaticText2, 1,
 		wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
 	edSizeY = new wxSpinCtrl(
-		this, ID_SPINCTRL2, _T("6"), wxDefaultPosition, wxSize(50, -1), 0, 1,
+		this, ID_SPINCTRL2, _T("8"), wxDefaultPosition, wxSize(50, -1), 0, 1,
 		200, 8, _T("ID_SPINCTRL2"));
-	edSizeY->SetValue(_T("6"));
+	edSizeY->SetValue(_T("8"));
 	FlexGridSizer17->Add(
 		edSizeY, 1, wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
 		5);
@@ -300,7 +301,7 @@ camera_calib_guiDialog::camera_calib_guiDialog(wxWindow* parent, wxWindowID id)
 		StaticText3, 1,
 		wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
 	edLengthX = new wxTextCtrl(
-		this, ID_TEXTCTRL1, _("25.0"), wxDefaultPosition, wxSize(40, -1), 0,
+		this, ID_TEXTCTRL1, _("80.0"), wxDefaultPosition, wxSize(40, -1), 0,
 		wxDefaultValidator, _T("ID_TEXTCTRL1"));
 	FlexGridSizer18->Add(
 		edLengthX, 1,
@@ -312,7 +313,7 @@ camera_calib_guiDialog::camera_calib_guiDialog(wxWindow* parent, wxWindowID id)
 		StaticText6, 1,
 		wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
 	edLengthY = new wxTextCtrl(
-		this, ID_TEXTCTRL3, _("25.0"), wxDefaultPosition, wxSize(40, -1), 0,
+		this, ID_TEXTCTRL3, _("80.0"), wxDefaultPosition, wxSize(40, -1), 0,
 		wxDefaultValidator, _T("ID_TEXTCTRL3"));
 	FlexGridSizer18->Add(
 		edLengthY, 1,
@@ -684,6 +685,7 @@ void camera_calib_guiDialog::OnbtnAboutClick(wxCommandEvent&)
 // save matrices:
 void camera_calib_guiDialog::OnbtnSaveClick(wxCommandEvent& event)
 {
+	// Save all parameters into a single yaml file 
 	if (camera_params.intrinsicParams(0, 0) == 0)
 	{
 		wxMessageBox(_("Run the calibration first"), _("Error"));
@@ -692,30 +694,70 @@ void camera_calib_guiDialog::OnbtnSaveClick(wxCommandEvent& event)
 
 	{
 		wxFileDialog dlg(
-			this, _("Save intrinsic parameters matrix"), _("."),
-			_("intrinsic_matrix.txt"),
-			_("Text files (*.txt)|*.txt|All files (*.*)|*.*"),
+			this, _("Save all camera info parameters"), _("."),
+			_("camera_info.yaml"),
+			_("Text files (*.yaml)|*.yaml|All files (*.*)|*.*"),
 			wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 		if (wxID_OK != dlg.ShowModal()) return;
 
-		camera_params.intrinsicParams.saveToTextFile(
-			string(dlg.GetPath().mb_str()));
-	}
+		std::vector<double> intV;
+		for (unsigned i = 0; i < 3; i++) 
+			for (unsigned j = 0; j < 3; j++) 
+				intV.push_back(static_cast<double>(camera_params.intrinsicParams(i, j)));
 
-	{
-		wxFileDialog dlg(
-			this, _("Save distortion parameters"), _("."),
-			_("distortion_matrix.txt"),
-			_("Text files (*.txt)|*.txt|All files (*.*)|*.*"),
-			wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+		std::vector<double> proV;
+		for (unsigned i = 0; i < 3; i++) {
+			for (unsigned j = 0; j < 3; j++) 
+				proV.push_back(static_cast<double>(camera_params.intrinsicParams(i, j)));
+			proV.push_back(0.0);
+		}
 
-		if (wxID_OK != dlg.ShowModal()) return;
+		std::vector<double> distV;
+		for (unsigned i = 0; i < 8; i++) distV.push_back(camera_params.dist[i]);
 
-		CMatrixDouble M(1, 5);
-		for (unsigned i = 0; i < 5; i++) M(0, i) = camera_params.dist[i];
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "image_width" << YAML::Value << 640;
+		out << YAML::Key << "image_height" << YAML::Value << 480;
+		out << YAML::Key << "camera_name" << YAML::Value << "camera";
+		out << YAML::Key << "camera_matrix" << YAML::Value;
+			out << YAML::BeginMap;
+			out << YAML::Key << "rows" << YAML::Value << 3;
+			out << YAML::Key << "cols" << YAML::Value << 3;
+			out << YAML::Key << "data" << YAML::Value;
+				out << YAML::Flow << intV;
+			out << YAML::EndMap;
+		out << YAML::Key << "distortion_model" << YAML::Value << "rational_polynomial";
+		out << YAML::Key << "distortion_coefficients" << YAML::Value;
+			out << YAML::BeginMap;
+			out << YAML::Key << "rows" << YAML::Value << 1;
+			out << YAML::Key << "cols" << YAML::Value << 8;
+			out << YAML::Key << "data" << YAML::Value;
+				out << YAML::Flow << distV;
+			out << YAML::EndMap;
+		out << YAML::Key << "rectification_matrix" << YAML::Value;
+			out << YAML::BeginMap;
+			out << YAML::Key << "rows" << YAML::Value << 3;
+			out << YAML::Key << "cols" << YAML::Value << 3;
+			out << YAML::Key << "data" << YAML::Value;
+				out << YAML::Flow << YAML::BeginSeq;
+				out << 1.0 << 0.0 << 0.0;
+				out << 0.0 << 1.0 << 0.0;
+				out << 0.0 << 0.0 << 1.0;
+				out << YAML::EndSeq;
+			out << YAML::EndMap;
+		out << YAML::Key << "projection_matrix" << YAML::Value;
+			out << YAML::BeginMap;
+			out << YAML::Key << "rows" << YAML::Value << 3;
+			out << YAML::Key << "cols" << YAML::Value << 4;
+			out << YAML::Key << "data" << YAML::Value;
+				out << YAML::Flow << proV;
+			out << YAML::EndMap;
+		out << YAML::EndMap;
 
-		M.saveToTextFile(string(dlg.GetPath().mb_str()));
+		std::ofstream fout(string(dlg.GetPath().mb_str()));
+		fout << out.c_str();
 	}
 }
 

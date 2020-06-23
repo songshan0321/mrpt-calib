@@ -32,7 +32,7 @@ if(CMAKE_MRPT_HAS_WXWIDGETS)
 
 	# Add the required libraries for linking:
 	include_directories( ${wxWidgets_INCLUDE_DIRS} )
-	target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} )
+	target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${LIBYAMLCPP_LIBRARIES})
 	target_link_libraries(${PROJECT_NAME} ${MRPT_LINKER_LIBS})
 
 	# Dependencies on MRPT libraries:

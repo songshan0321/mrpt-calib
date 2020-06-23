@@ -277,12 +277,12 @@ bool mrpt::vision::checkerBoardCameraCalibration(
 		// Calculate the camera parameters
 		// ---------------------------------------------
 		// Calibrate camera
-		cv::Mat cameraMatrix, distCoeffs(1, 5, CV_64F, cv::Scalar::all(0));
+		cv::Mat cameraMatrix, distCoeffs(1, 8, CV_64F, cv::Scalar::all(0));
 		vector<cv::Mat> rvecs, tvecs;
 
 		const double cv_calib_err = cv::calibrateCamera(
 			objectPoints, imagePoints, imgSize, cameraMatrix, distCoeffs, rvecs,
-			tvecs, 0 /*flags*/);
+			tvecs, cv::CALIB_RATIONAL_MODEL+cv::CALIB_ZERO_TANGENT_DIST);
 
 		// Load matrix:
 		{
@@ -292,7 +292,7 @@ bool mrpt::vision::checkerBoardCameraCalibration(
 		}
 
 		out_camera_params.dist.fill(0);
-		for (int k = 0; k < 5; k++)
+		for (int k = 0; k < 8; k++)
 			out_camera_params.dist[k] = distCoeffs.ptr<double>()[k];
 
 		// Load camera poses:
